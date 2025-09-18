@@ -1,6 +1,6 @@
-# Demo 3 Contenedores: Frontend + Backend + Base de Datos
+# Contenedores: Frontend + Backend + Base de Datos
 
-Este proyecto es un ejemplo mínimo pero completo de una aplicación dividida en **tres contenedores**:
+Este proyecto es un ejemplo de una aplicación dividida en **tres contenedores**:
 - **frontend**: Nginx sirviendo archivos estáticos y actuando como *reverse-proxy* para `/api` hacia el backend.
 - **backend**: API REST sencilla en Node.js (Express) que se conecta a PostgreSQL.
 - **db**: Base de datos PostgreSQL.
