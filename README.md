@@ -119,29 +119,4 @@ curl http://localhost:8080/api/todos
   - Healthchecks más robustos y `restart: unless-stopped` si aplica.
   - Backups del volumen `dbdata`.
 
----
 
-## Preguntas frecuentes
-
-**¿Por qué el frontend puede llamar a `/api` sin CORS?**  
-Porque Nginx actúa como **reverse-proxy** dentro del mismo origen `localhost:8080` y redirige internamente al servicio `backend:3000`.
-
-**¿Dónde se guardan los datos?**  
-En el volumen `dbdata` de Docker, montado en `/var/lib/postgresql/data` del contenedor de la base de datos.
-
----
-
-## Enlace al repositorio
-
-Sube este proyecto a tu cuenta (GitHub/GitLab/Bitbucket). Pasos típicos en GitHub:
-
-```bash
-git init
-git add .
-git commit -m "Demo 3 contenedores: frontend+backend+db"
-git branch -M main
-git remote add origin https://github.com/USUARIO/three-tier-docker-app.git
-git push -u origin main
-```
-
-Luego pega ese enlace aquí o en tu entrega.
