@@ -1,1 +1,139 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Demo 3 Contenedores</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-100">
+  <div class="max-w-3xl mx-auto px-4 py-8">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-gray-800 mb-2">Demo Full-Stack con Docker</h1>
+      <p class="text-gray-600">
+        <span class="inline-flex items-center gap-2">
+          Frontend (Nginx) 
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+          Backend (Node/Express)
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+          Base de datos (PostgreSQL)
+        </span>
+      </p>
+    </div>
 
+    <div class="bg-white rounded-lg shadow-lg p-6">
+      <div class="flex gap-4 mb-6">
+        <input 
+          id="todoTitle" 
+          type="text"
+          placeholder="¿Qué harás hoy?" 
+          class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        <button 
+          onclick="addTodo(event)"
+          class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+        >
+          Agregar
+        </button>
+      </div>
+      <ul id="todoList" class="space-y-2"></ul>
+    </div>
+  </div>
+
+  <script>
+    async function fetchTodos() {
+      try {
+        const res = await fetch('/api/todos');
+        const data = await res.json();
+        const list = document.getElementById('todoList');
+        list.innerHTML = '';
+        
+        if (data.length === 0) {
+          const emptyState = document.createElement('li');
+          emptyState.className = 'text-center py-8 text-gray-500';
+          emptyState.innerHTML = `
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <p>No hay tareas pendientes</p>
+          `;
+          list.appendChild(emptyState);
+          return;
+        }
+
+        data.forEach(t => {
+          const li = document.createElement('li');
+          li.className = 'bg-gray-50 rounded-lg p-4 flex items-center justify-between hover:bg-gray-100 transition-colors';
+          li.innerHTML = `
+            <div class="flex items-center gap-3">
+              <span class="text-sm font-medium text-gray-500">#${t.id}</span>
+              <span class="text-gray-800">${t.title}</span>
+            </div>
+            <span class="text-blue-600 opacity-0 group-hover:opacity-100">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </span>
+          `;
+          list.appendChild(li);
+        });
+      } catch (error) {
+        console.error('Error al cargar las tareas:', error);
+        const errorMessage = document.createElement('li');
+        errorMessage.className = 'text-center py-4 text-red-500';
+        errorMessage.textContent = 'Error al cargar las tareas. Por favor, intenta de nuevo.';
+        list.appendChild(errorMessage);
+      }
+    }
+
+    async function addTodo(event) {
+      const input = document.getElementById('todoTitle');
+      const title = input.value.trim();
+      if (!title) return;
+
+      // Si el evento viene del Enter en el input, buscamos el botón
+      const button = event?.target.tagName === 'BUTTON' ? 
+                    event.target : 
+                    document.querySelector('button[onclick="addTodo(event)"]');
+
+      try {
+        button.disabled = true;
+        button.innerHTML = `
+          <svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        `;
+
+        await fetch('/api/todos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title })
+        });
+
+        input.value = '';
+        await fetchTodos();
+      } catch (error) {
+        console.error('Error al agregar la tarea:', error);
+        alert('Error al agregar la tarea. Por favor, intenta de nuevo.');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Agregar';
+      }
+    }
+
+    // Agregar evento para enviar con Enter
+    document.getElementById('todoTitle').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        addTodo(e);
+      }
+    });
+
+    fetchTodos();
+  </script>
+</body>
+</html>
